@@ -9,9 +9,7 @@ from io import BytesIO  #网页源代码解压缩
 import gzip
 import sqlite3
 import sys,threading,time
-from selenium import webdriver #模拟浏览器操作
 import datetime
-import json,codecs,os
 from queue import Queue
 
 findTitle = re.compile(r'title="(.*?)"')
@@ -26,7 +24,6 @@ def main():
     a = input('请输入您要爬取的页数：')
     print('若中途报错，为服务器防爬取机制，请减少线程数量。')
     thread_num = input('请输入最大线程数量：')
-
     if aa == '3':
         baseurl = "https://nyaa.si/"
         baseurl1 = "https://sukebei.nyaa.si/"
@@ -46,14 +43,6 @@ def main():
         savepath = ".\\nyaa.xls"
         saveData(datalist1, savepath,'sukebei_nyaa')
 
-    # datalist2 = getData_img(baseurl)
-    # datalist3 = getData_img(baseurl1)
-    dbpath = ".\\nyaa.db"
-    # init_db(dbpath)  #创建数据库
-    # saveData2DB(datalist, dbpath)
-    # saveData2DB(datalist1, dbpath)
-    # saveData2DB_img(datalist2, dbpath,0)
-    # saveData2DB_img(datalist3, dbpath,len(datalist2))
 
 def askURL(url):
     head = {  # 模拟浏览器头部信息
@@ -64,10 +53,9 @@ def askURL(url):
         'referer' : '%s'%url
 
     }
-    # 用户代理，表示告诉豆瓣服务器，我们是什么类型的机器、浏览器（本质上是告诉浏览器，我们可以接收什么水平的文件内容）
+    # 用户代理，表示告诉服务器，我们是什么类型的机器、浏览器（本质上是告诉浏览器，我们可以接收什么水平的文件内容）
 
 
-    # print("yon")
     request = urllib.request.Request(url, headers=head)
     response = urllib.request.urlopen(request)
     a = response.read()
@@ -76,26 +64,6 @@ def askURL(url):
     html = f.read().decode("UTF-8")
     return html
 
-def askURL_img(url):
-    path = r"E:\DEMO\douban\test1\msedgedriver.exe"
-    driver = webdriver.Edge(executable_path=path)  #打开Chrome浏览器
-    driver.get(url)  #输入url,打开百度首页
-    html = driver.page_source
-    # print(html)
-    return (html)
-
-def getData_img(url):
-    datalist = []
-    html = askURL_img(url)
-    soup = BeautifulSoup(html, "lxml")
-    for item in soup.find_all("li",class_="rank-item"):
-        data = []
-        item = str(item)
-        # print(item)
-        img = re.findall(findImg,item)[0]
-        # print(img)
-        datalist.append(img)
-    return datalist
 
 
 def pa(url):
@@ -110,7 +78,6 @@ def pa(url):
         for item in soup.find_all("tr", class_=ii):
             data = []
             item = str(item)
-            # print(item)
             size = re.findall(findSizeUpDownCom, item)[1]
             if g == 'Y' or 'y':
                 if size[len(size) - 3:] != 'GiB':
@@ -132,8 +99,6 @@ def pa(url):
             upload = re.findall(findSizeUpDownCom, item)[2]
             download = re.findall(findSizeUpDownCom, item)[3]
             complete = re.findall(findSizeUpDownCom, item)[4]
-            # i += 1
-            # data.append(str(i))
             data.append(title1)
             data.append(title2)
             data.append(upload)
@@ -144,7 +109,6 @@ def pa(url):
             data.append(size)
             data.append(update)
             data.append(URL)
-            # print(data)
             U = int(upload)
             D = int(download)
             F = int(complete)
@@ -164,16 +128,6 @@ def pa(url):
 
 def getData(url,page,thread_num):
     page = int(page) + 1
-    # i = 0
-    # if not os.path.exists("./rate.json"):  # 判断,是否存在此路径,若不存在则创建,注意这个创建的是文件夹
-    #     updownrate = {}
-    # else:
-    #     dataa = []
-    #     with codecs.open('rate.json','r','utf-8') as f:
-    #         for line in f:
-    #             dic = json.loads(line)
-    #             dataa.append(dic)
-    #             updownrate = eval(json.dumps(dic, indent=4, ensure_ascii=False)) #eval转变成字典类型
     queue_url = Queue()
     thread_num = int(thread_num)
     for item in range(1, page):
@@ -190,9 +144,6 @@ def getData(url,page,thread_num):
             t = threading.Thread(target=pa, name='th-' + str(item),kwargs={'url': url})
             t.start()
     t.join()
-    #print(datalist)
-    # with codecs.open('rate.json','wb','utf-8') as outf:
-    #     json.dump(updownrate, outf, ensure_ascii=False)
 
 
 def saveData(datalist,savepath,sheetname):
@@ -209,65 +160,6 @@ def saveData(datalist,savepath,sheetname):
             sheet.write(i+1,j,data[j])      #数据
     book.save(savepath)       #保存
 
-
-def saveData2DB(datalist,dbpath):
-    print("dbsave...")
-    conn = sqlite3.connect(dbpath)
-    cur = conn.cursor()
-
-    for data in datalist:
-        for index in range(len(data)):
-            data[index] = '"'+data[index].replace("\"","“")+'"'
-        sql = '''
-                insert into bilibiliLank (
-                lank,name,update_date,link,plau,comment,heart,score,info) 
-                values(%s)'''%",".join(data)
-        #print(sql)
-        cur.execute(sql)
-        conn.commit()
-    cur.close()
-    conn.close()
-
-def saveData2DB_img(datalist,dbpath,i):
-    conn = sqlite3.connect(dbpath)
-    cur = conn.cursor()
-    for data in datalist:
-        i += 1
-        data = str(data)
-        # print(data)
-        index = '"' + data.replace("\"", "“") + '"'
-        sql = '''
-                        update bilibiliLank set imglink 
-                        = %s where ID = %d'''%(index,i)
-        cur.execute(sql)
-        conn.commit()
-    cur.close()
-    conn.close()
-
-
-def init_db(dbpath):
-    sql = '''
-        create table bilibiliLank 
-        (
-        id integer primary key autoincrement,
-        lank varchar ,
-        name varchar ,
-        update_date varchar ,
-        link text ,
-        plau varchar ,
-        comment varchar ,
-        heart varchar ,
-        score numeric ,
-        info text ,
-        imglink text
-        )
-
-    '''  # 创建数据表
-    conn = sqlite3.connect(dbpath)
-    cursor = conn.cursor()
-    cursor.execute(sql)
-    conn.commit()
-    conn.close()
 
 
 if __name__ == '__main__':
