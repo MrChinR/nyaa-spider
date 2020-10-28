@@ -79,7 +79,7 @@ def pa(url):
             data = []
             item = str(item)
             size = re.findall(findSizeUpDownCom, item)[1]
-            if g == 'Y' or 'y':
+            if g == 'Y' or g == 'y':
                 if size[len(size) - 3:] != 'GiB':
                     continue
             title1 = re.findall(findTitle, item)[0]
@@ -93,8 +93,12 @@ def pa(url):
             day = int(update[8:])
             start = datetime.date(year, month, day)
             DE = (end - start).days
-            URL = url + re.findall(findUrl, item)[1][1:]
-            torrent = url + re.findall(findMagnet, item)[0][1:]
+            if url[:10] == 'https://ny':
+                url1 = 'https://nyaa.si/'
+            else:
+                url1 = 'https://sukebei.nyaa.si/'
+            URL = url1 + re.findall(findUrl, item)[1][1:]
+            torrent = url1 + re.findall(findMagnet, item)[0][1:]
             magnet = re.findall(findMagnet, item)[1]
             upload = re.findall(findSizeUpDownCom, item)[2]
             download = re.findall(findSizeUpDownCom, item)[3]
