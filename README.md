@@ -16,3 +16,12 @@ DE:上传日期与爬种时相差的天数（例如今天是26号，23号的DE�
 
 结果=（F-U-D）/DE*（D/U）
 数值越大越不是黑车…
+
+
+以下为自动翻译（The following is automatic translation）
+Attention!!!!!!
+Nyaa site only 100 pages, sukebei only 50 pages, more than the number of pages will not be able to crawl.
+Nyaa and sukebei seed crawler, through a certain algorithm to judge whether the seed is worth to download (whether black car), crawl the data will be endures with convenient access to Excel document in the directory.
+A large number of crawl seeds, multi-threaded climb take note that the number of threads do not too big, to prevent the server 403, crawl seeds can choose whether to skip is less than 1 g seed file.
+Whether for targeted judgment mechanism is: U: upload number D: download number F: complete count DE: upload date and climb a difference of the number of days (today is 26, for example, 23 DE is 3)
+Results = (F - U - D)/DE * (D/U) numerical bigger is not a black car...
